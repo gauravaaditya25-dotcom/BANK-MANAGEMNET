@@ -1,0 +1,181 @@
+from pathlib import Path 
+import json
+import random
+import string
+
+class Bank:
+    database = 'database.json'
+    data = []
+
+    try:
+        if Path(database).exists():
+            with open (database) as fs:
+                data = json.loads(fs.read())
+        else:
+            print("Sorry we are facing some issues")
+
+    except Exception as err:
+        print(f"An error occurred: {err} ")
+
+    @classmethod
+    def __update(cls):
+        with open (cls.database, 'w') as fs:
+            fs.write(json.dumps(cls.data))
+
+    @staticmethod
+    def __accountno():
+        alpha = random.choices(string.ascii_letters,k = 5)
+        digits = random.choices(string.digits,k = 4)
+        id = alpha + digits
+        random.shuffle(id)
+        return "".join(id)
+
+    def createaccount(self):
+        d = {
+            "name": input("plese tell your name:- "),
+            "email": input("plese tell your email:- "),
+            "phone no": int(input("plese tell your phone no:- ")),
+            "pin": int(input("plese tell your pin (4 digit):- ")),
+            "Account No.":Bank.__accountno(),
+            "balance":0
+            }
+        print(f"please note down your account number:- {d['Account No.']}")
+        if len(str(d["pin"])) != 4:
+            print("plese enter a valid pin")
+
+        elif len(str(d["phone no"])) != 10:
+            print("plese enter a valid phone no")
+
+        else:
+            Bank.data.append(d)
+            Bank.__update()
+
+    def deposite_money(self):
+        accNo = input("Tell your account number:- ")
+        pin = input("Enter your pin:- ")
+        user_data = [i for i in Bank.data if i["Account No."] == accNo and str(i["pin"]) == pin]
+        print(user)
+
+        if not user_data:
+            print("user not found")
+        else:
+            amount = int(input("Enter amount to be deposited:- "))
+            if amount <= 0:
+                print("Enter a valid amount")
+            elif amount > 10000:
+                print("greater than 10000")
+            else:
+                user_data[0]["balance"] += amount
+                Bank.__update()
+                print("Amount credeited successfully")
+
+    def withdraw_money(self):
+        accNo = input("Tell your account number:- ")
+        pin = input("Enter your pin:- ")
+        user_data = [i for i in Bank.data if i["Account No."] == accNo and str(i["pin"]) == pin]
+
+        if not user_data:
+            print("user not found")
+        else:
+            amount = int(input("Enter amount to be deposited:- "))
+            if amount <= 0:
+                print("Enter a valid amount")
+            elif amount > 10000:
+                print("greater than 10000")
+            else:
+                if user_data[0]["balance"] < amount:
+                    print("insufficient balance")
+                else:
+                    user_data[0]["balance"] -= amount
+                    Bank.__update()
+                    print("Amount withdraw successfully")
+
+    def details(self):
+        accNo = input("Tell your account number:- ")
+        pin = input("Enter your pin:- ")
+        user_data = [i for i in Bank.data if i["Account No."] == accNo and str(i["pin"]) == pin]
+
+        if not user_data:
+            print("user not found")
+        else:
+            for i in user_data[0]:
+                if i == "pin":          #we are hiding the pin details here with the use of continue
+                    continue
+                else:
+                    print(i, user_data[0][i])
+
+    def update_details(self):
+        accNo = input("Tell your account number:- ")
+        pin = input("Enter your pin:- ")
+        user_data = [i for i in Bank.data if i["Account No."] == accNo and str(i["pin"]) == pin]
+        
+        if not user_data:
+            print("user not found")
+        else:
+            #account aur balance change nii hoge toh purana wala hi rahega
+            print("you cannot change Account Number")
+            print("Now update your details and skip it if you want to")
+            new_data = {
+                'name': input("Enter your new name:- "),
+                'email': input("Enter your new email:- "),
+                'phone no':input("Enter your new phone no:- "),
+                'pin': input("Enter your new pin:- ")
+            }
+            for i in new_data:
+                if new_data[i] == "":
+                    new_data[i] = user_data[0][i]
+            print(new_data)
+            new_data['Account No.'] = user_data[0]['Account No.']
+            new_data['balance'] = user_data[0]['balance']
+
+
+            for i in user_data[0]:
+                if user_data[0][i] == new_data[i]:
+                    continue
+                else:
+                    if new_data[i].isnumeric():
+                        user_data[0][i] = int(new_data[i])
+                    else:
+                        user_data[0][i] = new_data[i]
+            Bank.__update()
+            print("data updated...")
+
+    def delete_user(self):
+        accNo = input("Tell your account number:- ")
+        pin = input("Enter your pin:- ")
+        user_data = [i for i in Bank.data if i["Account No."] == accNo and str(i["pin"]) == pin]
+
+        if not user_data:
+            print("user data is not found")
+        else:
+            for i  in user_data:
+                    Bank.data.remove(i)
+                    
+        Bank.__update()
+        print("your account deleted...")
+
+    
+
+
+user = Bank()
+print("press 1 for creating  a account")
+print("press 2 to deposit money")
+print("press 3 to withdraw money")
+print("press 4 for details")
+print("press 5 for updating the details")
+print("press 6 for deleting the account")
+
+check = int(input("tell your choice:- "))
+
+if check == 1:
+    user.createaccount()
+elif check == 2:
+    user.deposite_money()
+elif check == 3:
+    user.withdraw_money()
+elif check == 4:
+    user.details()
+elif check == 5:
+    user.update_details()
+elif check == 6:
+    user.delete_user()
